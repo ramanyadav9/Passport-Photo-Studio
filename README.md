@@ -91,8 +91,8 @@ A 35 × 45 mm photo comes out 35 × 45 mm.
 Needs [Flutter](https://docs.flutter.dev/get-started/install) 3.44 or newer.
 
 ```bash
-git clone https://github.com/ramanyadav9/-Passport-Photo-Studio.git
-cd -Passport-Photo-Studio
+git clone https://github.com/ramanyadav9/Passport-Photo-Studio.git
+cd Passport-Photo-Studio
 flutter pub get
 flutter run
 ```
