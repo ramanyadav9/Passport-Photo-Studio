@@ -1,0 +1,17 @@
+# Launcher icons, generated from the Stitch logo mark by tool/make_icon.dart.
+# Regenerate with:
+#   dart run tool/make_icon.dart
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon/icon.png
+
+  # Android adaptive icons keep the mark on the brand navy while the launcher
+  # applies whatever mask it likes.
+  adaptive_icon_background: "#031632"
+  adaptive_icon_foreground: assets/icon/icon_foreground.png
+
+  # iOS forbids transparency in app icons.
+  remove_alpha_ios: true
+  background_color_ios: "#031632"
