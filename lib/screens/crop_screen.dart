@@ -78,10 +78,15 @@ class _PhotoSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 76,
+      height: 60,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMargin),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pageMargin,
+          0,
+          AppSpacing.pageMargin,
+          AppSpacing.stackSm,
+        ),
         itemCount: state.photos.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.stackSm),
         itemBuilder: (context, i) {
@@ -95,7 +100,7 @@ class _PhotoSwitcher extends StatelessWidget {
             child: GestureDetector(
               onTap: () => state.setActivePhoto(photo.id),
               child: Container(
-                width: 56,
+                width: 44,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppRadii.chip),
                   border: Border.all(
@@ -133,18 +138,25 @@ class _Controls extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pageMargin,
-        AppSpacing.gutter,
+        AppSpacing.stackSm,
         AppSpacing.pageMargin,
-        AppSpacing.stackMd,
+        AppSpacing.gutter,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _RotateButton(onTap: state.rotateActivePhoto),
-          const SizedBox(height: AppSpacing.gutter),
-          Semantics(
-            header: true,
-            child: Text('Photo Format', style: text.labelBold),
+          // Rotate shares the heading's row rather than taking one of its own.
+          // Every row down here is a row the photo does not get, and on this
+          // screen the photo is the thing being worked on.
+          Row(
+            children: [
+              Semantics(
+                header: true,
+                child: Text('Photo Format', style: text.labelBold),
+              ),
+              const Spacer(),
+              _RotateButton(onTap: state.rotateActivePhoto),
+            ],
           ),
           const SizedBox(height: AppSpacing.stackSm),
           SingleChildScrollView(
@@ -176,6 +188,9 @@ class _Controls extends StatelessWidget {
             expand: true,
             onPressed: state.nextStep,
           ),
+          // Keeps the button clear of the gesture bar without the extra block
+          // of padding a fixed margin would add.
+          SizedBox(height: MediaQuery.paddingOf(context).bottom > 0 ? 0 : 4),
         ],
       ),
     );
@@ -207,14 +222,15 @@ class _RotateButton extends StatelessWidget {
       button: true,
       label: 'Rotate photo a quarter turn to the right',
       child: SizedBox(
-        height: AppSpacing.touchTargetMin + 8,
+        height: AppSpacing.touchTargetMin,
         child: OutlinedButton.icon(
           onPressed: onTap,
-          icon: const Icon(Icons.rotate_90_degrees_cw_outlined, size: 24),
+          icon: const Icon(Icons.rotate_90_degrees_cw_outlined, size: 22),
           label: Text('Rotate', style: Theme.of(context).textTheme.labelBold),
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.primary,
             side: const BorderSide(color: AppColors.primary, width: 2),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.gutter),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadii.chip),
             ),

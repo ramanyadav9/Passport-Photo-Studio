@@ -8,12 +8,6 @@ import '../widgets/primary_button.dart';
 import '../widgets/selector_chip.dart';
 import '../widgets/sheet_preview.dart';
 
-const _paperIcons = <String, IconData>{
-  'A4': Icons.description_outlined,
-  'Letter': Icons.description_outlined,
-  '4x6': Icons.receipt_outlined,
-};
-
 class LayoutScreen extends StatelessWidget {
   const LayoutScreen({super.key});
 
@@ -110,9 +104,11 @@ class LayoutScreen extends StatelessWidget {
             children: [
               for (final paper in PaperSpec.presets) ...[
                 Expanded(
+                  // No icons here: A4 and Letter looked identical, so the
+                  // icon distinguished nothing while taking the width that
+                  // pushed the longest label out of its chip.
                   child: SelectorChip(
                     label: paper.name,
-                    icon: _paperIcons[paper.name],
                     isSelected: state.paper == paper,
                     onTap: () => state.setPaper(paper),
                   ),

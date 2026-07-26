@@ -7,9 +7,18 @@ import '../layout/packing.dart';
 import '../models/photo_spec.dart';
 import '../models/source_photo.dart';
 
-/// Print resolution. 300 DPI is what a photo lab expects and what consumer
-/// printers resolve; beyond it the file grows without looking better.
-const printDpi = 300.0;
+/// Print resolution.
+///
+/// 300 is the photographic standard and roughly where the eye stops resolving
+/// detail at reading distance, so 450 is not expected to look different on a
+/// normal print. It is here as headroom for a sheet that gets enlarged,
+/// scanned, or resampled by a professional lab.
+///
+/// The cost is small and worth knowing: a sheet goes from about 200 kB to
+/// about 500 kB, and export takes no longer, because the time goes on decoding
+/// the camera photo rather than resizing it. Raising it further buys nothing a
+/// consumer printer can put on paper.
+const printDpi = 450.0;
 
 /// Everything one crop job needs, in a form that can cross an isolate boundary.
 typedef _CropJob = (
@@ -129,14 +138,26 @@ Uint8List _cropToJpeg(_CropJob job) {
   final h = height.clamp(1, upright.height - y);
 
   final cropped = img.copyCrop(upright, x: x, y: y, width: w, height: h);
+
+  // Box averaging is the right filter for shrinking — it takes every source
+  // pixel into account, so a 12MP photo reduced to print size stays clean. It
+  // is the wrong filter for enlarging, where it blocks up; cubic is smoother.
+  // Which way we are going depends on how far the user zoomed in.
+  final isEnlarging = outWidth > cropped.width;
   final resized = img.copyResize(
     cropped,
     width: outWidth,
     height: outHeight,
-    interpolation: img.Interpolation.average,
+    interpolation: isEnlarging
+        ? img.Interpolation.cubic
+        : img.Interpolation.average,
   );
 
-  return img.encodeJpg(resized, quality: 92);
+  // Full chroma rather than the usual 4:2:0 subsampling. Faces are mostly
+  // smooth colour, and halving the colour resolution is exactly the sort of
+  // loss that shows on skin at print size. Costs a little file size on a
+  // document nobody stores.
+  return img.encodeJpg(resized, quality: 95, chroma: img.JpegChroma.yuv444);
 }
 
 /// Raised when a sheet cannot be produced, carrying wording a non-technical

@@ -31,7 +31,7 @@ class SelectorChip extends StatelessWidget {
             minHeight: AppSpacing.touchTargetMin + 8,
           ),
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.gutter,
+            horizontal: AppSpacing.stackSm + 4,
             vertical: 12,
           ),
           decoration: BoxDecoration(
@@ -42,25 +42,34 @@ class SelectorChip extends StatelessWidget {
               width: isSelected ? 2 : 1.5,
             ),
           ),
+          // A chip in an Expanded row gets whatever width is left over, which
+          // on a narrow phone can be less than its label wants. Flexible plus
+          // ellipsis keeps it inside its box instead of overflowing the row.
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
                 Icon(
                   icon,
-                  size: 22,
+                  size: 20,
                   color: isSelected
                       ? AppColors.primary
                       : AppColors.onSurfaceVariant,
                 ),
-                const SizedBox(width: AppSpacing.stackSm),
+                const SizedBox(width: 6),
               ],
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelBold.copyWith(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.onSurfaceVariant,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelBold.copyWith(
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],

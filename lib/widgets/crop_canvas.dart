@@ -86,11 +86,21 @@ class _CropCanvasState extends State<CropCanvas> {
     );
   }
 
-  /// The largest window of the required aspect ratio that fits, with a margin
-  /// so the guide lines are never flush against the screen edge.
+  /// The largest window of the required aspect ratio that fits, with just
+  /// enough margin that the guide lines are not flush against the screen edge.
+  ///
+  /// Kept tight on purpose: this is the screen where the user is judging a
+  /// face against a guide, so the photo should be as large as the phone allows.
+  static const _margin = 8.0;
+
   static Size _fitWindow(BoxConstraints constraints, double aspect) {
-    final maxW = constraints.maxWidth - AppSpacing.stackMd * 2;
-    final maxH = constraints.maxHeight - AppSpacing.stackMd * 2;
+    // A very short screen can leave nothing here once the controls have taken
+    // their share; clamping keeps the size legal rather than negative.
+    final maxW = (constraints.maxWidth - _margin * 2).clamp(0.0, double.infinity);
+    final maxH = (constraints.maxHeight - _margin * 2).clamp(
+      0.0,
+      double.infinity,
+    );
 
     var width = maxW;
     var height = width / aspect;
