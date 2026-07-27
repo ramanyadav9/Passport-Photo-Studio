@@ -9,6 +9,8 @@ usable by someone who has never used a smartphone app before.
 
 Everything happens on the device. No account, no upload, no internet needed.
 
+[![Latest release](https://img.shields.io/github/v/release/ramanyadav9/Passport-Photo-Studio?label=latest&color=031632)](https://github.com/ramanyadav9/Passport-Photo-Studio/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/ramanyadav9/Passport-Photo-Studio/total?color=031632)](https://github.com/ramanyadav9/Passport-Photo-Studio/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter)](https://flutter.dev)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-lightgrey)](#)
@@ -17,19 +19,29 @@ Everything happens on the device. No account, no upload, no internet needed.
 
 ## Download
 
-Grab the APK from the [**Releases**](../../releases/latest) page and install it
-on your Android phone.
+<p align="center">
+  <a href="https://github.com/ramanyadav9/Passport-Photo-Studio/releases/latest/download/app-arm64-v8a-release.apk">
+    <img src="https://img.shields.io/badge/Download%20for%20Android-APK-031632?style=for-the-badge&logo=android&logoColor=white" alt="Download the Android APK">
+  </a>
+</p>
 
-| Your phone | File |
+That button always gives you the newest version. Most phones made since 2017
+need this one.
+
+If it will not install, your phone has a different processor — try one of these
+instead:
+
+| Your phone | Download |
 | --- | --- |
-| Almost every phone made since 2017 | `app-arm64-v8a-release.apk` |
-| Older or budget devices | `app-armeabi-v7a-release.apk` |
-| Emulators | `app-x86_64-release.apk` |
+| Most phones since 2017 | [**arm64-v8a**](https://github.com/ramanyadav9/Passport-Photo-Studio/releases/latest/download/app-arm64-v8a-release.apk) |
+| Older or budget devices | [armeabi-v7a](https://github.com/ramanyadav9/Passport-Photo-Studio/releases/latest/download/app-armeabi-v7a-release.apk) |
+| Emulators | [x86_64](https://github.com/ramanyadav9/Passport-Photo-Studio/releases/latest/download/app-x86_64-release.apk) |
 
-If you are not sure, take `arm64-v8a`. Android will refuse to install the wrong
-one, so nothing breaks if you guess.
+Android refuses to install the wrong one, so nothing breaks if you guess. You
+will need to allow installing from outside the Play Store the first time.
 
-You will need to allow installing from outside the Play Store the first time.
+All versions are on the [Releases](https://github.com/ramanyadav9/Passport-Photo-Studio/releases)
+page.
 
 ---
 
