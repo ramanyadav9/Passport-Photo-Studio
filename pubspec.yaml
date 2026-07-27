@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+2
+version: 1.1.0+3
 
 environment:
   sdk: ^3.12.2
@@ -39,6 +39,16 @@ dependencies:
   pdf: ^3.13.0
   printing: ^5.15.0
   image: ^4.9.1
+  share_plus: ^13.3.0
+  path_provider: ^2.1.6
+# jni 1.0.1 calls kotlin() in its Groovy build.gradle, which only resolves when
+# Flutter applies the Kotlin plugin to plugin projects — and turning that on
+# breaks flutter_plugin_android_lifecycle instead. 1.0.0 builds cleanly and is
+# what every release so far shipped with. Remove this once jni fixes its
+# build script.
+dependency_overrides:
+  jni: 1.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

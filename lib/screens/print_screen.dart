@@ -43,6 +43,47 @@ class _PrintScreenState extends State<PrintScreen> {
     }
   }
 
+  /// PDF or image, asked as two large buttons with the reason for each, since
+  /// "PDF" and "PNG" mean nothing to most of the people using this.
+  Future<void> _chooseFormat(StudioState state) async {
+    final format = await showModalBottomSheet<ExportFormat>(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadii.card),
+        ),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.pageMargin),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Save as',
+                style: Theme.of(sheetContext).textTheme.headlineLg,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.stackMd),
+              for (final format in ExportFormat.values) ...[
+                _FormatButton(
+                  format: format,
+                  onTap: () => Navigator.pop(sheetContext, format),
+                ),
+                const SizedBox(height: AppSpacing.gutter),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (format == null || !mounted) return;
+    await _run(_Busy.sharing, () => _export.share(state, format));
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -75,19 +116,40 @@ class _PrintScreenState extends State<PrintScreen> {
             DraggableSheet(state: state),
           const SizedBox(height: AppSpacing.gutter),
 
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: ready ? state.resetToGrid : null,
-              icon: const Icon(Icons.grid_on),
-              label: Text('Reset to Grid', style: text.labelBold),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                minimumSize: const Size(0, AppSpacing.touchTargetMin),
+          // Wrap rather than Row: on a narrow phone these two controls do not
+          // fit side by side, and dropping to a second line beats clipping.
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppSpacing.gutter,
+            children: [
+              TextButton.icon(
+                onPressed: ready ? state.resetToGrid : null,
+                icon: const Icon(Icons.grid_on),
+                label: Text('Reset to Grid', style: text.labelBold),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  minimumSize: const Size(0, AppSpacing.touchTargetMin),
+                ),
               ),
-            ),
+              Semantics(
+                label: 'Draw a cutting line around each photo',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Border', style: text.labelBold),
+                    Switch(
+                      value: state.photoBorder,
+                      activeThumbColor: AppColors.onPrimary,
+                      activeTrackColor: AppColors.primary,
+                      onChanged: ready ? state.setPhotoBorder : null,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.stackMd),
+          const SizedBox(height: AppSpacing.gutter),
 
           _PrintButton(
             busy: _busy == _Busy.printing,
@@ -99,9 +161,7 @@ class _PrintScreenState extends State<PrintScreen> {
 
           _ShareButton(
             busy: _busy == _Busy.sharing,
-            onPressed: ready
-                ? () => _run(_Busy.sharing, () => _export.share(state))
-                : null,
+            onPressed: ready ? () => _chooseFormat(state) : null,
           ),
           const SizedBox(height: AppSpacing.stackSm),
 
@@ -120,6 +180,72 @@ class _PrintScreenState extends State<PrintScreen> {
 }
 
 enum _Busy { none, printing, sharing }
+
+class _FormatButton extends StatelessWidget {
+  const _FormatButton({required this.format, required this.onTap});
+
+  final ExportFormat format;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+
+    return Semantics(
+      button: true,
+      label: '${format.label}, ${format.hint}',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadii.button),
+        child: Container(
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.primaryButtonHeight + 8,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.stackMd,
+            vertical: 12,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.button),
+            border: Border.all(color: AppColors.primary, width: 2),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                format == ExportFormat.pdf
+                    ? Icons.picture_as_pdf_outlined
+                    : Icons.image_outlined,
+                size: 26,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: AppSpacing.gutter),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      format.label,
+                      style: text.labelBold.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    Text(
+                      format.hint,
+                      style: text.labelMd.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _PrintButton extends StatelessWidget {
   const _PrintButton({required this.busy, required this.onPressed});

@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+import 'dart:ui' show Size;
+
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:pdf/pdf.dart';
@@ -19,6 +22,36 @@ import '../models/source_photo.dart';
 /// the camera photo rather than resizing it. Raising it further buys nothing a
 /// consumer printer can put on paper.
 const printDpi = 450.0;
+
+/// Thickness of the optional border around each photo. A hairline: thick
+/// enough to cut along, thin enough not to eat into the face.
+const borderWidthMm = 0.2;
+
+/// Ceiling on the size of a rasterised page, in pixels.
+///
+/// Rasterising is not printing: the bitmap is built in native memory and
+/// copied across the platform channel as raw RGBA, so an A4 page at 450 DPI is
+/// 19.6 megapixels, 78 MB of pixels, and asks for roughly 139 MB in a single
+/// allocation while the buffer grows. That is an OutOfMemoryError on a real
+/// phone, and it kills the process rather than throwing something catchable.
+///
+/// 8 megapixels is far more than any screen or messaging app needs and leaves
+/// generous headroom on a budget device.
+const maxRasterPixels = 8000000;
+
+/// The largest DPI that keeps a page of [pageMm] under [maxRasterPixels],
+/// never exceeding [requestedDpi].
+///
+/// Pure arithmetic so the ceiling can be tested without rasterising anything.
+double rasterDpiFor(Size pageMm, double requestedDpi) {
+  final widthInches = pageMm.width / 25.4;
+  final heightInches = pageMm.height / 25.4;
+  final squareInches = widthInches * heightInches;
+  if (squareInches <= 0) return requestedDpi;
+
+  final fitting = math.sqrt(maxRasterPixels / squareInches);
+  return fitting < requestedDpi ? fitting : requestedDpi;
+}
 
 /// Everything one crop job needs, in a form that can cross an isolate boundary.
 typedef _CropJob = (
@@ -43,6 +76,7 @@ Future<Uint8List> buildSheetPdf({
   required PhotoSpec spec,
   required SourcePhoto? Function(String photoId) photoFor,
   double dpi = printDpi,
+  bool border = false,
 }) async {
   final tileWidthPx = (spec.widthMm / 25.4 * dpi).round();
   final tileHeightPx = (spec.heightMm / 25.4 * dpi).round();
@@ -91,11 +125,24 @@ Future<Uint8List> buildSheetPdf({
                 pw.Positioned(
                   left: tile.positionMm.dx * PdfPageFormat.mm,
                   top: tile.positionMm.dy * PdfPageFormat.mm,
-                  child: pw.Image(
-                    images[tile.sourcePhotoId]!,
+                  child: pw.Container(
                     width: layout.tileSizeMm.width * PdfPageFormat.mm,
                     height: layout.tileSizeMm.height * PdfPageFormat.mm,
-                    fit: pw.BoxFit.fill,
+                    // The border is drawn inside the photo's own rectangle, so
+                    // switching it on never moves a photo or changes how many
+                    // fit — it only gives the cutter a line to follow.
+                    decoration: border
+                        ? pw.BoxDecoration(
+                            border: pw.Border.all(
+                              color: PdfColors.grey600,
+                              width: borderWidthMm * PdfPageFormat.mm,
+                            ),
+                          )
+                        : null,
+                    child: pw.Image(
+                      images[tile.sourcePhotoId]!,
+                      fit: pw.BoxFit.fill,
+                    ),
                   ),
                 ),
           ],

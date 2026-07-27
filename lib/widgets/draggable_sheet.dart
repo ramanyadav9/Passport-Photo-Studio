@@ -54,6 +54,9 @@ class _DraggableSheetState extends State<DraggableSheet> {
           if (tile.id != tileId) tile.rectMm(layout.tileSizeMm),
       ],
       page: layout.usableMm,
+      // Snap to the gap the user actually chose, so a dragged tile matches
+      // what "Reset to Grid" would produce.
+      gapMm: layout.gapMm,
     );
 
     widget.state.moveTile(tileId, result.positionMm);
@@ -74,6 +77,7 @@ class _DraggableSheetState extends State<DraggableSheet> {
     return SheetPreview(
       layout: state.layout,
       photoFor: state.photoById,
+      border: state.photoBorder,
       overlay: (context, scale) => CustomPaint(
         painter: _GuidePainter(guides: _guides, scale: scale),
       ),

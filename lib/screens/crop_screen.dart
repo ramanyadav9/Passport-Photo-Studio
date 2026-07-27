@@ -6,6 +6,7 @@ import '../models/photo_spec.dart';
 import '../state/studio_state.dart';
 import '../theme.dart';
 import '../widgets/crop_canvas.dart';
+import '../widgets/preset_picker.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/selector_chip.dart';
 
@@ -152,35 +153,25 @@ class _Controls extends StatelessWidget {
             children: [
               Semantics(
                 header: true,
-                child: Text('Photo Format', style: text.labelBold),
+                child: Text('Photo Size', style: text.labelBold),
               ),
               const Spacer(),
               _RotateButton(onTap: state.rotateActivePhoto),
             ],
           ),
           const SizedBox(height: AppSpacing.stackSm),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (final spec in PhotoSpec.presets) ...[
-                  SelectorChip(
-                    label: spec.name,
-                    isSelected: state.photoSpec == spec,
-                    onTap: () => state.setPhotoSpec(spec),
-                  ),
-                  const SizedBox(width: AppSpacing.stackSm),
-                ],
-                SelectorChip(
-                  label: state.photoSpec.isCustom
-                      ? '${_trim(state.photoSpec.widthMm)}'
-                            'x${_trim(state.photoSpec.heightMm)}mm'
-                      : 'Custom',
-                  isSelected: state.photoSpec.isCustom,
-                  onTap: () => _askCustomSize(context, state),
-                ),
-              ],
-            ),
+          // One row instead of a strip of chips: most people are looking for
+          // their document by name, not comparing millimetres.
+          Row(
+            children: [
+              Expanded(child: _DocumentButton(state: state)),
+              const SizedBox(width: AppSpacing.stackSm),
+              SelectorChip(
+                label: 'Custom',
+                isSelected: state.photoSpec.isCustom,
+                onTap: () => _askCustomSize(context, state),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.gutter),
           PrimaryButton(
@@ -205,6 +196,84 @@ class _Controls extends StatelessWidget {
       builder: (_) => _CustomSizeDialog(current: state.photoSpec),
     );
     if (result != null) state.setPhotoSpec(result);
+  }
+}
+
+/// Shows what the photo is being cut to, and opens the document picker.
+///
+/// Reads as a sentence rather than a code: "India - Passport, 35 x 45 mm".
+class _DocumentButton extends StatelessWidget {
+  const _DocumentButton({required this.state});
+
+  final StudioState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final preset = state.preset;
+    final spec = state.photoSpec;
+
+    final title = preset?.label ?? (spec.isCustom ? 'Custom size' : spec.name);
+    final subtitle = preset?.sizeLabel ??
+        '${_Controls._trim(spec.widthMm)} x '
+            '${_Controls._trim(spec.heightMm)} mm';
+
+    return Semantics(
+      button: true,
+      label: 'Photo size, $title, $subtitle. Tap to choose a document.',
+      child: InkWell(
+        onTap: () async {
+          final chosen = await showPresetPicker(context, current: preset);
+          if (chosen != null) state.setPreset(chosen);
+        },
+        borderRadius: BorderRadius.circular(AppRadii.chip),
+        child: Container(
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.touchTargetMin + 8,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.gutter,
+            vertical: 8,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.selectedFill,
+            borderRadius: BorderRadius.circular(AppRadii.chip),
+            border: Border.all(color: AppColors.primary, width: 2),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: text.labelBold.copyWith(color: AppColors.primary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      subtitle,
+                      style: text.labelMd.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.unfold_more,
+                size: 22,
+                color: AppColors.primary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

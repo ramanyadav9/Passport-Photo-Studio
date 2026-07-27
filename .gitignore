@@ -4,6 +4,10 @@ android/key.properties
 **/*.jks
 **/*.keystore
 
+# Gradle writes reports here; the root /build/ rule does not reach it.
+android/build/
+android/.gradle/
+
 # Kept local, not published.
 docs/internal/
 test/

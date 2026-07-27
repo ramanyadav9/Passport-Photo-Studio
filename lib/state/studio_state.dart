@@ -3,6 +3,7 @@ import 'dart:ui' show Offset, Size;
 import 'package:flutter/foundation.dart';
 
 import '../layout/packing.dart';
+import '../models/document_preset.dart';
 import '../models/paper_spec.dart';
 import '../models/photo_spec.dart';
 import '../models/source_photo.dart';
@@ -21,6 +22,22 @@ enum WorkflowStep {
 
   /// 1-based, for the numbered stepper.
   int get number => index + 1;
+}
+
+/// Print resolution, in words a non-technical user can choose between.
+///
+/// The measured cost of each is in test/quality_report_test.dart: the file
+/// grows, the time does not, and above 450 nothing reaches the paper that the
+/// eye can see.
+enum PrintQuality {
+  standard('Standard', 300),
+  high('High', 450),
+  maximum('Maximum', 600);
+
+  const PrintQuality(this.label, this.dpi);
+
+  final String label;
+  final int dpi;
 }
 
 /// How many copies land on the sheet.
@@ -53,6 +70,10 @@ class StudioState extends ChangeNotifier {
   PaperSpec _paper = PaperSpec.a4;
   CopyCount _copies = CopyCount.six;
   PageOrigin _origin = PageOrigin.printableArea;
+  PrintQuality _quality = PrintQuality.high;
+  double _gapMm = defaultTileGapMm;
+  DocumentPreset? _preset;
+  bool _photoBorder = false;
 
   final List<SourcePhoto> _photos = [];
   final List<Tile> _tiles = [];
@@ -64,6 +85,46 @@ class StudioState extends ChangeNotifier {
   PaperSpec get paper => _paper;
   CopyCount get copies => _copies;
   PageOrigin get origin => _origin;
+  PrintQuality get quality => _quality;
+  double get gapMm => _gapMm;
+
+  /// A thin line around each photo for the cutter to follow. Off by default:
+  /// most people want a clean photo edge.
+  bool get photoBorder => _photoBorder;
+
+  void setPhotoBorder(bool on) {
+    if (_photoBorder == on) return;
+    _photoBorder = on;
+    notifyListeners();
+  }
+
+  /// The document this photo is for, when the user picked one. Null when they
+  /// chose a bare size instead.
+  DocumentPreset? get preset => _preset;
+
+  static const minGapMm = 0.0;
+  static const maxGapMm = 10.0;
+
+  void setQuality(PrintQuality quality) {
+    if (_quality == quality) return;
+    _quality = quality;
+    notifyListeners();
+  }
+
+  void setGapMm(double gapMm) {
+    final next = gapMm.clamp(minGapMm, maxGapMm);
+    if (_gapMm == next) return;
+    _gapMm = next;
+    resetToGrid();
+  }
+
+  /// Choosing a document sets the photo size from it and remembers the
+  /// document, so later steps can check the background and head height.
+  void setPreset(DocumentPreset preset) {
+    _preset = preset;
+    setPhotoSpec(preset.spec);
+    notifyListeners();
+  }
 
   List<SourcePhoto> get photos => List.unmodifiable(_photos);
   bool get hasPhotos => _photos.isNotEmpty;
@@ -142,6 +203,9 @@ class StudioState extends ChangeNotifier {
 
   void setPhotoSpec(PhotoSpec spec) {
     if (_photoSpec == spec) return;
+    // A size chosen directly is no longer a document, so its background and
+    // head-height rules stop applying.
+    if (_preset?.spec != spec) _preset = null;
     _photoSpec = spec;
 
     // A new aspect ratio can leave an existing pan hanging off the edge, which
@@ -179,6 +243,14 @@ class StudioState extends ChangeNotifier {
     usableMm: usableArea(_paper, _origin),
     tileSizeMm: Size(_photoSpec.widthMm, _photoSpec.heightMm),
     tiles: _tiles,
+    gapMm: _gapMm,
+  );
+
+  /// How many photos this paper could hold at the current size and gap.
+  int get maxCopies => maxFit(
+    Size(_photoSpec.widthMm, _photoSpec.heightMm),
+    usableArea(_paper, _origin),
+    gapMm: _gapMm,
   );
 
   List<Tile> get tiles => List.unmodifiable(_tiles);
@@ -194,6 +266,7 @@ class StudioState extends ChangeNotifier {
           origin: _origin,
           copies: _copies.count,
           photoIds: [for (final p in _photos) p.id],
+          gapMm: _gapMm,
         ).tiles,
       );
     notifyListeners();

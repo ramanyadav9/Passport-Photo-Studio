@@ -14,6 +14,7 @@ class SheetPreview extends StatelessWidget {
     required this.photoFor,
     this.tileBuilder,
     this.overlay,
+    this.border = false,
     super.key,
   });
 
@@ -33,6 +34,9 @@ class SheetPreview extends StatelessWidget {
 
   /// Painted above the tiles, given the same mm-to-pixel scale.
   final Widget Function(BuildContext context, double scale)? overlay;
+
+  /// Draws the cutting border, matching what the PDF will do.
+  final bool border;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +73,7 @@ class SheetPreview extends StatelessWidget {
                             layout.tileSizeMm.width * scale,
                             layout.tileSizeMm.height * scale,
                           ),
+                          border: border,
                         );
                         return tileBuilder?.call(
                               context,
@@ -95,24 +100,46 @@ class SheetPreview extends StatelessWidget {
 }
 
 class _TileContent extends StatelessWidget {
-  const _TileContent({required this.photo, required this.size});
+  const _TileContent({
+    required this.photo,
+    required this.size,
+    this.border = false,
+  });
 
   final SourcePhoto? photo;
   final Size size;
+  final bool border;
 
   @override
   Widget build(BuildContext context) {
-    if (photo == null) {
-      return ColoredBox(
-        color: AppColors.surfaceContainer,
-        child: const SizedBox.expand(),
-      );
-    }
-    return CroppedPhoto(
-      photo: photo!,
-      window: size,
-      // A preview never needs full camera resolution.
-      cacheWidth: (size.width * 2).round().clamp(64, 1200),
+    final Widget content = photo == null
+        ? const ColoredBox(
+            color: AppColors.surfaceContainer,
+            child: SizedBox.expand(),
+          )
+        : CroppedPhoto(
+            photo: photo!,
+            window: size,
+            // A preview never needs full camera resolution.
+            cacheWidth: (size.width * 2).round().clamp(64, 1200),
+          );
+
+    if (!border) return content;
+
+    // Drawn inside the tile, exactly as the PDF does, so turning it on never
+    // shifts a photo.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        content,
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.fromBorderSide(
+              BorderSide(color: AppColors.outline, width: 1),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

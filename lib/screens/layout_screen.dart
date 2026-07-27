@@ -118,6 +118,45 @@ class LayoutScreen extends StatelessWidget {
               ],
             ],
           ),
+          const SizedBox(height: AppSpacing.stackSm),
+          // The competitor shows this per paper size in a list; a sentence
+          // says the same thing without crowding three narrow chips.
+          Text(
+            '${state.paper.name} fits up to ${state.maxCopies} photos at '
+            '${_mm(state.photoSpec.widthMm)}x'
+            '${_mm(state.photoSpec.heightMm)}mm.',
+            style: text.labelMd.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          const SizedBox(height: AppSpacing.stackMd),
+
+          Semantics(
+            header: true,
+            child: Text('Space Between Photos', style: text.labelBold),
+          ),
+          const SizedBox(height: AppSpacing.gutter),
+          const _GapStepper(),
+          const SizedBox(height: AppSpacing.stackMd),
+
+          Semantics(
+            header: true,
+            child: Text('Print Quality', style: text.labelBold),
+          ),
+          const SizedBox(height: AppSpacing.gutter),
+          Row(
+            children: [
+              for (final q in PrintQuality.values) ...[
+                Expanded(
+                  child: SelectorChip(
+                    label: q.label,
+                    isSelected: state.quality == q,
+                    onTap: () => state.setQuality(q),
+                  ),
+                ),
+                if (q != PrintQuality.values.last)
+                  const SizedBox(width: AppSpacing.stackSm),
+              ],
+            ],
+          ),
           const SizedBox(height: AppSpacing.stackMd),
 
           const _OriginToggle(),
@@ -154,6 +193,99 @@ class LayoutScreen extends StatelessWidget {
           '$size - about $each each for $people people';
     }
     return '$placed photos on ${state.paper.name} - $size';
+  }
+}
+
+/// Controls the room left between photos for cutting. Stepper rather than a
+/// slider: a slider is fiddly with a fingertip, and the useful range is small.
+class _GapStepper extends StatelessWidget {
+  const _GapStepper();
+
+  static const _step = 0.5;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final state = context.watch<StudioState>();
+    final gap = state.gapMm;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.gutter,
+        vertical: AppSpacing.stackSm,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        border: Border.all(color: AppColors.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          _StepButton(
+            icon: Icons.remove,
+            label: 'Less space between photos',
+            onTap: gap > StudioState.minGapMm
+                ? () => state.setGapMm(gap - _step)
+                : null,
+          ),
+          Expanded(
+            child: Semantics(
+              liveRegion: true,
+              child: Text(
+                gap == 0
+                    ? 'None'
+                    : '${gap.toStringAsFixed(gap % 1 == 0 ? 0 : 1)} mm',
+                textAlign: TextAlign.center,
+                style: text.labelBold.copyWith(fontSize: 20),
+              ),
+            ),
+          ),
+          _StepButton(
+            icon: Icons.add,
+            label: 'More space between photos',
+            onTap: gap < StudioState.maxGapMm
+                ? () => state.setGapMm(gap + _step)
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepButton extends StatelessWidget {
+  const _StepButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: IconButton(
+        onPressed: onTap,
+        icon: Icon(icon, size: 26),
+        color: AppColors.primary,
+        disabledColor: AppColors.outlineVariant,
+        style: IconButton.styleFrom(
+          minimumSize: const Size(
+            AppSpacing.touchTargetMin,
+            AppSpacing.touchTargetMin,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.chip),
+            side: const BorderSide(color: AppColors.outlineVariant),
+          ),
+        ),
+      ),
+    );
   }
 }
 

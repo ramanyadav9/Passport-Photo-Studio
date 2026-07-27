@@ -22,6 +22,7 @@ class SheetLayout {
     required this.usableMm,
     required this.tileSizeMm,
     required this.tiles,
+    this.gapMm = defaultTileGapMm,
   });
 
   final Size pageMm;
@@ -34,7 +35,7 @@ class SheetLayout {
 
   /// Gap between neighbouring photos, so the preview, the drag sheet and the
   /// PDF all space tiles the same way.
-  double get gapMm => defaultTileGapMm;
+  final double gapMm;
 
   bool get isEmpty => tiles.isEmpty;
 
@@ -165,5 +166,6 @@ SheetLayout packSheet({
     usableMm: usable,
     tileSizeMm: tileSize,
     tiles: tiles,
+    gapMm: gapMm,
   );
 }

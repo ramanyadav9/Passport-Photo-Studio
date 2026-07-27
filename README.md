@@ -47,28 +47,39 @@ Four numbered steps, in order.
 **1 · Add** — take a photo or pick several from the gallery. More than one
 person can share a sheet.
 
-**2 · Adjust** — pinch to zoom and drag to frame the face inside the guide box,
-with the dashed eye line to line up against. Rotate a photo that came out
-sideways. Each photo keeps its own framing.
+**2 · Adjust** — choose your document by name, then pinch to zoom and drag to
+frame the face inside the guide box, with the dashed eye line to line up
+against. Rotate a photo that came out sideways. Each photo keeps its own
+framing.
 
 **3 · Layout** — choose 4, 6, 8 copies or fill the sheet, on A4, Letter or 4×6in
-paper. The preview is the real shape of the paper.
+paper. Set the gap to cut along and the print quality. The preview is the real
+shape of the paper, and tells you how many photos it holds.
 
 **4 · Print** — drag any photo to move it, with alignment guides that snap like
 the ones in Word. Tap a photo to swap who is in that slot. Then print to any
-printer your phone already knows about, or save a PDF to print elsewhere.
+printer your phone already knows about, or save a PDF or image to print
+elsewhere.
 
-### Photo sizes
+### Document sizes
+
+Pick your document by name — India, US, UK, Schengen, Canada, Australia, China,
+Japan, Singapore, UAE, New Zealand and more — and the size and required
+background colour come with it. Search by country, document or size.
 
 | Size | Where it is used |
 | --- | --- |
 | 35 × 45 mm | India, UK, EU passports (default) |
-| 2 × 2 in | United States passports |
+| 2 × 2 in | United States passports and visas |
+| 20 × 25 mm | India stamp size |
+| 50 × 70 mm | Canada passport |
 | 35 × 35 mm | ID photos |
-| 4 × 6 in | Standard photo print |
 | Custom | Anything from 10 to 300 mm |
 
-Photos are laid out with a 2 mm gap so there is room to cut between them.
+Sizes are a guide — check with your embassy or authority if you are unsure.
+
+Photos are laid out with an adjustable gap, 2 mm by default, so there is room
+to cut between them.
 
 ---
 
